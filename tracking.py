@@ -4,7 +4,7 @@ from re import search
 import re
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
-df = pd.read_csv('API KEY', usecols = ['User Name', 'Barcode', 'Result'])
+df = pd.read_csv('https://api.codereadr.com/share/5aa76baae4f197a6dbab56e11e144dd2', usecols = ['User Name', 'Barcode', 'Result'])
 
 '''Convert Datafram to List'''
 master_list = df.values.tolist()
