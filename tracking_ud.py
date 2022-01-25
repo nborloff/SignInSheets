@@ -4,7 +4,7 @@ from re import search
 import re
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
-df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result'])
+df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned'])
 
 '''Convert Datafram to List'''
 master_list = df.values.tolist()
@@ -49,19 +49,30 @@ for location, SID, check, status in child_list: # sort into lists by location
 '''Need to export to spreadsheet at this point'''
 
 LLRC_NEW = []
+LIBRARY_NEW = []
+MESA_NEW = []
+
 
 for location, SID, check, status in LLRC:
     format = re.sub("[^0-9]", "", check)
     format1 = format[8:]
     LLRC_NEW.append([location, SID, check, status, format1])
 
+for location, SID, check, status in MESA:
+    format = re.sub("[^0-9]", "", check)
+    format1 = format[8:]
+    MESA_NEW.append([location, SID, check, status, format1])
+
 '''Add up time totals'''
 LLRC_Dict = {} # total time spent in lab
 LLRC_Dict_Count = {} # SID attached to variable
 Library_Dict = {}
 MESA_Dict = {}
+MESA_Dict_Count = {}
 Fitness_Dict = {}
 
+
+'''Add up times for LLRC'''
 for location, SID, check, status, stamp in LLRC_NEW:
     LLRC_Dict[SID] = 0
 
@@ -72,6 +83,19 @@ for location, SID, check, status, stamp in LLRC_NEW:
 
     else:
         LLRC_Dict[SID] = LLRC_Dict[SID] + (int(stamp) - int(LLRC_Dict_Count[SID]))
+
+
+'''Add up times for MESA'''
+for location, SID, check, status, stamp in MESA_NEW:
+    MESA_Dict[SID] = 0
+
+for location, SID, check, status, stamp in MESA_NEW:
+    
+    if status == 'IN':
+        MESA_Dict_Count[SID] = stamp
+
+    else:
+        MESA_Dict[SID] = MESA_Dict[SID] + (int(stamp) - int(MESA_Dict_Count[SID]))
          
 pprint(LLRC_Dict)        
-        
+pprint(MESA_Dict)

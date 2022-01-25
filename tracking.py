@@ -2,9 +2,10 @@ import pandas as pd
 from pprint import pprint
 from re import search
 import re
+import datetime as dt
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
-df = pd.read_csv('https://api.codereadr.com/share/5aa76baae4f197a6dbab56e11e144dd2', usecols = ['User Name', 'Barcode', 'Result'])
+df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
 
 '''Convert Datafram to List'''
 master_list = df.values.tolist()
@@ -13,37 +14,58 @@ master_list = df.values.tolist()
 master_list.reverse()
 
 '''Declare Separate Lists for Each Location'''
+child_list = []
 LLRC = []
 Library = []
+MESA = []
+Fitness = []
 
-'''Separate Data by Location + Initial Formatting'''
-for location, SID, check in master_list:
+
+'''Separate Data by Location + Formatting'''
+for location, SID, in_out, t_stamp, LLRC_Prog in master_list:
+    
+    if search("IN", in_out): # Add entry that specifies IN or OUT before formatting
+        status = "IN"
+    else:
+        status = "OUT"
+    
+    child_list.append([location, SID, status, t_stamp, LLRC_Prog])
+
+for location, SID, in_out, t_stamp, LLRC_Prog in child_list: # sort into lists by location
     if location == "LLRC":
-        if search("IN", check):
-            status = "IN"
-        else:
-            status = "OUT"
-        new = re.sub("[^0-9]", "", check) # trim excess info from timestamp
-        formatted0 = new[:4] + "-" + new[4:] # then format date/time
-        formatted1 = formatted0[:7] + "-" + formatted0[7:]
-        formatted2 = formatted1[:10] + " " + formatted1[10:]
-        formatted3 = formatted2[:13] + ":" + formatted2[13:]
-        formatted4 = formatted3[:16] + ":" + formatted3[16:]
-        LLRC.append([location, SID, formatted4, status])
-        
+        LLRC.append([location, SID, in_out, t_stamp, LLRC_Prog])
     elif location == "MendocinoCollege-Library":
-        if search("IN", check):
-            lb_status = "IN"
-        else:
-            lb_status = "OUT"
-        new1 = re.sub("[^0-9]", "", check) # trim excess info from timestamp
-        lb_formatted0 = new1[:4] + "-" + new1[4:] # then format date/time
-        lb_formatted1 = lb_formatted0[:7] + "-" + lb_formatted0[7:]
-        lb_formatted2 = lb_formatted1[:10] + " " + lb_formatted1[10:]
-        lb_formatted3 = lb_formatted2[:13] + ":" + lb_formatted2[13:]
-        lb_formatted4 = lb_formatted3[:16] + ":" + lb_formatted3[16:]
-        Library.append([location, SID, lb_formatted4, lb_status])
-        
-pprint(LLRC)
-pprint(Library)
+        Library.append([location, SID, in_out, t_stamp])
+    elif location == "MESA-MC":
+        MESA.append([location, SID, in_out, t_stamp])
+    elif location == "Fitness":
+        Fitness.append([location, SID, in_out, t_stamp])
 
+'''Export to a spreadsheet at this point'''
+
+
+'''Add up time totals'''
+EDU_List = []
+Other_List = []
+
+def fun(die_Lage):
+    for location, SID, in_out, t_stamp, LLRC_Prog in die_Lage:
+        if LLRC_Prog == 'EDU 500':
+            EDU_List.append([SID, t_stamp, LLRC_Prog])
+        else:
+            Other_List.append([SID, t_stamp, LLRC_Prog])
+
+fun(LLRC)
+
+Count_List = {}
+
+def fun(zeit):
+    for SID, t_stamp, LLRC_Prog in zeit:
+        if SID not in Count_List:
+            Count_List[SID] = [t_stamp]
+        else:
+            Count_List[SID].append(t_stamp)
+
+fun(EDU_List)
+
+pprint(Count_List)
