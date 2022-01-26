@@ -68,28 +68,32 @@ def fun(zeit):
 
 fun(EDU_List)
 
-Total_Dict = {}
 
+pprint(Count_List)
+
+Total_Dict = {}
 temp = ""
 fmt = '%Y-%m-%d %H:%M:%S'
 for key, val in Count_List.items():
     for i in val:
+        
         if i[0:11] == temp[0:11]:
             '''subtract timestamp and send it somewhere'''
             tstamp1 = datetime.strptime(i, fmt)
             tstamp2 = datetime.strptime(temp, fmt)
             difference = int(round(abs((tstamp2 - tstamp1).total_seconds()) / 60))
             
-            if key not in Total_Dict:
-                Total_Dict.update({key: [difference]})
-            else:
-                Total_Dict[key] += [difference]
             
-        else:    
+            Total_Dict[key] += [difference]
+            
+        elif key in Total_Dict:    
             temp = i
-            #Total_Dict[key] = [difference]
-
-pprint(Total_Dict)            
+        else:
+            temp = i
+            Total_Dict.update({key: ["IN"]})
+                     
+pprint(Total_Dict) 
+  
             
         
 
