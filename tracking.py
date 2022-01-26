@@ -1,8 +1,8 @@
 import pandas as pd
 from pprint import pprint
-from re import search
+from re import I, search
 import re
-import datetime as dt
+from datetime import datetime
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
 df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
@@ -69,3 +69,16 @@ def fun(zeit):
 fun(EDU_List)
 
 pprint(Count_List)
+
+#print(x[0][0:11])
+
+for key, value in Count_List.items():
+    count = 0
+    print(value[count][0:11])
+    count += 1
+
+
+
+        
+    
+
