@@ -79,10 +79,15 @@ for key, val in Count_List.items():
             tstamp1 = datetime.strptime(i, fmt)
             tstamp2 = datetime.strptime(temp, fmt)
             difference = int(round(abs((tstamp2 - tstamp1).total_seconds()) / 60))
-            Total_Dict[key] = difference
-            print(difference)
+            
+            if key not in Total_Dict:
+                Total_Dict.update({key: [difference]})
+            else:
+                Total_Dict[key] += [difference]
+            
         else:    
             temp = i
+            #Total_Dict[key] = [difference]
 
 pprint(Total_Dict)            
             
