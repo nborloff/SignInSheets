@@ -68,14 +68,28 @@ def fun(zeit):
 
 fun(EDU_List)
 
-pprint(Count_List)
+Total_Dict = {}
 
-#print(x[0][0:11])
+temp = ""
+fmt = '%Y-%m-%d %H:%M:%S'
+for key, val in Count_List.items():
+    for i in val:
+        if i[0:11] == temp[0:11]:
+            '''subtract timestamp and send it somewhere'''
+            tstamp1 = datetime.strptime(i, fmt)
+            tstamp2 = datetime.strptime(temp, fmt)
+            difference = int(round(abs((tstamp2 - tstamp1).total_seconds()) / 60))
+            Total_Dict[key] = difference
+            print(difference)
+        else:    
+            temp = i
 
-for key, value in Count_List.items():
-    count = 0
-    print(value[count][0:11])
-    count += 1
+pprint(Total_Dict)            
+            
+        
+
+    
+
 
 
 
