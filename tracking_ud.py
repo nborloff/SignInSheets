@@ -1,11 +1,20 @@
+from doctest import master
+from queue import Empty
+import string
 import pandas as pd
 from pprint import pprint
-from re import search
+from re import I, search
 import re
+from datetime import datetime
+import math
+import numpy as np
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
-df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned'])
+df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
 
+df.rename(columns={'Answer 1': 'Answer'}, inplace=True)
+df1 = df.replace(np.nan, 'Other', regex=True)
+print(df1)
 '''Convert Datafram to List'''
 master_list = df.values.tolist()
 
@@ -15,87 +24,63 @@ master_list.reverse()
 '''Declare Separate Lists for Each Location'''
 child_list = []
 LLRC = []
-Library = []
 MESA = []
 Fitness = []
 
-
 '''Separate Data by Location + Formatting'''
-for location, SID, check in master_list:
+for location, SID, in_out, t_stamp, LLRC_Prog in master_list:
     
-    if search("IN", check): # Add entry that specifies IN or OUT before formatting
-        status = "IN"
+    if search("IN", in_out): # Add entry that specifies IN or OUT before formatting
+        in_out = "IN"
     else:
-        status = "OUT"
-    
-    new = re.sub("[^0-9]", "", check) # trim excess info from timestamp
-    formatted0 = new[:4] + "-" + new[4:] # then format date/time
-    formatted1 = formatted0[:7] + "-" + formatted0[7:]
-    formatted2 = formatted1[:10] + " " + formatted1[10:]
-    formatted3 = formatted2[:13] + ":" + formatted2[13:]
-    formatted4 = formatted3[:16] + ":" + formatted3[16:]
-    child_list.append([location, SID, formatted4, status])
+        in_out = "OUT"
 
-for location, SID, check, status in child_list: # sort into lists by location
+    child_list.append([location, SID, in_out, t_stamp, LLRC_Prog])
+
+
+for location, SID, in_out, t_stamp, LLRC_Prog in master_list:
+    
+    str(LLRC_Prog)
+    
+    child_list.append([location, SID, in_out, t_stamp, LLRC_Prog])
+
+for location, SID, in_out, t_stamp, LLRC_Prog in child_list: # sort into lists by location
     if location == "LLRC":
-        LLRC.append([location, SID, check, status])
-    elif location == "MendocinoCollege-Library":
-        Library.append([location, SID, check, status])
+        LLRC.append([location, SID, in_out, t_stamp, LLRC_Prog])
     elif location == "MESA-MC":
-        MESA.append([location, SID, check, status])
+        MESA.append([location, SID, in_out, t_stamp, LLRC_Prog])
     elif location == "Fitness":
-        Fitness.append([location, SID, check, status])
+        Fitness.append([location, SID, in_out, t_stamp, LLRC_Prog])
 
-'''Need to export to spreadsheet at this point'''
+'''Export Raw but Formatted Data to Spreadsheet'''
+LLRC_df = pd.DataFrame(LLRC, columns = ['Location', 'SID', 'in_out', 'Timestamp', 'Program'])
+MESA_df = pd.DataFrame(MESA, columns = ['Location', 'SID', 'in_out', 'Timestamp', 'Program'])
+Fitness_df = pd.DataFrame(Fitness, columns = ['Location', 'SID', 'in_out', 'Timestamp', 'Program'])
 
-LLRC_NEW = []
-LIBRARY_NEW = []
-MESA_NEW = []
+LLRC_df.to_csv('LLRC.csv', index=False)
+MESA_df.to_csv('MESA.csv', index=False)
+Fitness_df.to_csv('Fitness.csv', index=False)
 
+'Declare Lists for LLRC Programs'
+Math_Lab = []
+Student_Computers = []
+EDU_500 = []
+Study_Room = []
+Other = []
 
-for location, SID, check, status in LLRC:
-    format = re.sub("[^0-9]", "", check)
-    format1 = format[8:]
-    LLRC_NEW.append([location, SID, check, status, format1])
+'''Separates LLRC by Program'''
 
-for location, SID, check, status in MESA:
-    format = re.sub("[^0-9]", "", check)
-    format1 = format[8:]
-    MESA_NEW.append([location, SID, check, status, format1])
-
-'''Add up time totals'''
-LLRC_Dict = {} # total time spent in lab
-LLRC_Dict_Count = {} # SID attached to variable
-Library_Dict = {}
-MESA_Dict = {}
-MESA_Dict_Count = {}
-Fitness_Dict = {}
-
-
-'''Add up times for LLRC'''
-for location, SID, check, status, stamp in LLRC_NEW:
-    LLRC_Dict[SID] = 0
-
-for location, SID, check, status, stamp in LLRC_NEW:
-    
-    if status == 'IN':
-        LLRC_Dict_Count[SID] = stamp
-
+'''for location, SID, in_out, t_stamp, LLRC_Prog in LLRC:
+    if search("Lab", LLRC_Prog):
+        Math_Lab.append([SID, t_stamp, LLRC_Prog, in_out])
+    elif search("Computers", LLRC_Prog):
+        Student_Computers.append([SID, t_stamp, LLRC_Prog, in_out])
+    elif search("Peer", LLRC_Prog):
+        EDU_500.append([SID, t_stamp, LLRC_Prog, in_out])
+    elif search("Room", LLRC_Prog):
+        Study_Room.append([SID, t_stamp, LLRC_Prog, in_out])
     else:
-        LLRC_Dict[SID] = LLRC_Dict[SID] + (int(stamp) - int(LLRC_Dict_Count[SID]))
+        Other.append([SID, t_stamp, LLRC_Prog, in_out])'''
 
 
-'''Add up times for MESA'''
-for location, SID, check, status, stamp in MESA_NEW:
-    MESA_Dict[SID] = 0
-
-for location, SID, check, status, stamp in MESA_NEW:
-    
-    if status == 'IN':
-        MESA_Dict_Count[SID] = stamp
-
-    else:
-        MESA_Dict[SID] = MESA_Dict[SID] + (int(stamp) - int(MESA_Dict_Count[SID]))
-         
-pprint(LLRC_Dict)        
-pprint(MESA_Dict)
+#pprint(Math_Lab)

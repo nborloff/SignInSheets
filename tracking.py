@@ -1,3 +1,4 @@
+import string
 import pandas as pd
 from pprint import pprint
 from re import I, search
@@ -16,7 +17,6 @@ master_list.reverse()
 '''Declare Separate Lists for Each Location'''
 child_list = []
 LLRC = []
-Library = []
 MESA = []
 Fitness = []
 
@@ -34,14 +34,18 @@ for location, SID, in_out, t_stamp, LLRC_Prog in master_list:
 for location, SID, in_out, t_stamp, LLRC_Prog in child_list: # sort into lists by location
     if location == "LLRC":
         LLRC.append([location, SID, in_out, t_stamp, LLRC_Prog])
-    elif location == "MendocinoCollege-Library":
-        Library.append([location, SID, in_out, t_stamp])
     elif location == "MESA-MC":
         MESA.append([location, SID, in_out, t_stamp])
     elif location == "Fitness":
         Fitness.append([location, SID, in_out, t_stamp])
 
 '''Export to a spreadsheet at this point'''
+
+LLRC_df = pd.DataFrame(LLRC, columns = ['Location', 'SID', 'in_out', 'Timestamp', 'Program'], dtype = float)
+MESA_df = pd.DataFrame(MESA, columns = ['Location', 'SID', 'in_out', 'Timestamp'], dtype = float)
+
+LLRC_df.to_csv('LLRC.csv', index=False)
+MESA_df.to_csv('MESA.csv', index=False)
 
 '''Add up time totals'''
 EDU_List = []
@@ -71,6 +75,8 @@ def fun(zeit):
             Count_List[SID].append(in_out)
 
 fun(EDU_List)
+fun(Other_List)
+
 pprint(Count_List)
 
 '''Calculates number of minutes per session per student - flags students
@@ -106,6 +112,7 @@ def check_valid(Zeit_Worterbuch):
 
 
 check_valid(Count_List)
+
 
 temp_keys = []
 temp_keys = list(Total_Dict.keys())

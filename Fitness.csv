@@ -1,0 +1,5 @@
+Location,SID,in_out,Timestamp,Program
+Fitness,1157595,IN,2022-02-02 14:26:03,
+Fitness,1157595,OUT,2022-02-02 14:26:29,
+Fitness,1157595,"<<check>>IN,2022-02-02 14:26:03,Fitness<<check>>",2022-02-02 14:26:03,
+Fitness,1157595,"<<check>>OUT,2022-02-02 14:26:29,Fitness<<check>>",2022-02-02 14:26:29,
