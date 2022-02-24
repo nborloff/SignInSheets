@@ -134,9 +134,34 @@ def check_valid(Zeit_Worterbuch):
                 
                 temp = i
                 
+Final_Dict = {}
+flag = False
 
+def final_calc(dict):
+    for key, val in dict.items():
+        for i in val:
+            if  i == "IN" and key not in Final_Dict:
+                Final_Dict.update({key: [0]})
+                flag = True   
+            elif i == "IN" and flag == True:
+                Final_Dict[key] += [60]
+                flag = False
+            elif i == "IN" and flag == False:
+                flag = True
+            elif i == "OUT":
+                flag = False
+            else:
+                Final_Dict[key] += [i]
+                
 
 check_valid(Count_List)
 
-pprint(Total_Dict)
+final_calc(Total_Dict)
 
+def export(dict):
+    for key in dict:
+        dict[key] = [sum(dict[key])]
+
+export(Final_Dict)
+
+pprint(Final_Dict)
