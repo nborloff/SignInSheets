@@ -7,6 +7,7 @@ from re import I, search
 import re
 from datetime import datetime
 import numpy as np
+from pathlib import Path
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
 df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
@@ -97,8 +98,6 @@ def to_dict(zeit):
             Count_List[SID].append(t_stamp)
             Count_List[SID].append(in_out)
 
-to_dict(Math_Lab)
-# pprint(Count_List)
 '''Calculates number of minutes per session per student - flags students
 who signed in but didn't sign out'''
 
@@ -134,6 +133,13 @@ def check_valid(Zeit_Worterbuch):
                 
                 temp = i
                 
+'''First IN in list, we create a new entry in a new dictionary, set flag to true.
+If we hit a second in that means the student hasn't logged out and we add 60 minutes to their
+sheet and then set the flag to false. If we hit an IN and the flag is false, we set it to true and
+wait for either a second IN (previous case) or an integer. If we hit an integer we add the number
+to their total and then await an OUT. When we hit the OUT we se the flag to false. '''
+
+
 Final_Dict = {}
 flag = False
 
@@ -152,16 +158,35 @@ def final_calc(dict):
                 flag = False
             else:
                 Final_Dict[key] += [i]
+
                 
-
-check_valid(Count_List)
-
-final_calc(Total_Dict)
+'''This sums up the total of all the numbers in the values list, converts it to a dataframe,
+and then send it to a CSV.'''
 
 def export(dict):
+    global data_frame
     for key in dict:
         dict[key] = [sum(dict[key])]
+    
+    dict_items = dict.items()
+    
+    dict_list = list(dict_items)
+    
+    data_frame = pd.DataFrame(dict_list)
+    
+    data_frame.columns = ['SID', 'Total Time']
+    data_frame['Total Time'] = data_frame['Total Time'].explode().astype(int)
+    check_this = pd.to_datetime(data_frame['Total Time'], unit='m').dt.strftime('%H:%M')
+    
+    result = pd.concat([data_frame, check_this], axis=1)
+    pprint(result)
+    
+    filepath = Path('finished/out.csv')
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    result.to_csv(filepath, index=False)
 
+
+to_dict(Math_Lab)
+check_valid(Count_List)
+final_calc(Total_Dict)
 export(Final_Dict)
-
-pprint(Final_Dict)
