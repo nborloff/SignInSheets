@@ -8,6 +8,23 @@ import re
 from datetime import datetime
 import numpy as np
 from pathlib import Path
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication, QMainWindow
+import sys
+
+'''define application'''
+def window():
+    app = QApplication(sys.argv)
+    win = QMainWindow()
+    win.setGeometry(200, 200, 500, 500)
+    win.setWindowTitle("LLRC Attendance")
+
+    label = QtWidgets.QLabel(win)
+    label.setText("MESA")
+    label.move(50,50)
+
+    win.show()
+    sys.exit(app.exec_())
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
 df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
@@ -62,8 +79,7 @@ English_EDU_500 = []
 Study_Room = []
 DRC_Testing = []
 Other = []
-#MESA = [FULL OF STUFF]
-#Fitness = [FULL OF STUFF]
+MESA_Test = []
 
 '''Separates LLRC List by Program'''
 for location, SID, in_out, t_stamp, LLRC_Prog in LLRC:
@@ -85,6 +101,12 @@ for location, SID, in_out, t_stamp, LLRC_Prog in LLRC:
         DRC_Testing.append([SID, t_stamp, LLRC_Prog, in_out])
     else:
         Other.append([SID, t_stamp, LLRC_Prog, in_out])
+
+for location, SID, in_out, t_stamp, LLRC_Prog in MESA:
+    if LLRC_Prog == "Other":
+        MESA_Test.append([SID, t_stamp, LLRC_Prog, in_out])
+    else:
+        print("Problem")
 
 Count_List = {}
 
@@ -150,7 +172,7 @@ def final_calc(dict):
                 Final_Dict.update({key: [0]})
                 flag = True   
             elif i == "IN" and flag == True:
-                Final_Dict[key] += [60]
+                Final_Dict[key] += [240]
                 flag = False
             elif i == "IN" and flag == False:
                 flag = True
@@ -158,6 +180,9 @@ def final_calc(dict):
                 flag = False
             else:
                 Final_Dict[key] += [i]
+
+'''Must deal with last entry being an IN with no OUT'''
+
 
                 
 '''This sums up the total of all the numbers in the values list, converts it to a dataframe,
@@ -186,7 +211,9 @@ def export(dict):
     result.to_csv(filepath, index=False)
 
 
-to_dict(Math_Lab)
+to_dict(Other)
 check_valid(Count_List)
 final_calc(Total_Dict)
+
 export(Final_Dict)
+window()
