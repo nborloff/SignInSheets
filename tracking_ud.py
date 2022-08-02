@@ -27,7 +27,7 @@ def window():
     sys.exit(app.exec_())
 
 '''Read Excel Spreadsheet - Only Relevant Columns'''
-df = pd.read_csv('https://api.codereadr.com/share/45d80f27f0f12c8402f2e2371c849990', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
+df = pd.read_csv('API_KEY_GOES_HERE', usecols = ['User Name', 'Barcode', 'Result', 'Timestamp Scanned', 'Answer 1'])
 
 '''Fill in empty cells to avoid later errors'''
 df.rename(columns={'Answer 1': 'Answer'}, inplace=True)
